@@ -1,0 +1,85 @@
+import cv2
+import dlib
+import numpy 
+import math 
+PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
+predictor = dlib.shape_predictor(PREDICTOR_PATH)
+detector = dlib.get_frontal_face_detector()
+
+
+def annotate_landmarks(im):
+    rects = detector(im, 1)
+    dist=0
+    im = im.copy()
+    for face in rects:
+        posold = (0, 0)
+        counter=0
+        landmarks=numpy.matrix([[p.x, p.y] for p in predictor(im, face).parts()])
+        for point in landmarks:
+            posold=(point[0, 0], point[0, 1])
+            counter+=1
+        for idx, point in enumerate(landmarks):
+            
+                
+            pos = (point[0, 0], point[0, 1])
+            
+            
+                    
+                        
+           
+            #mouth
+            if idx>48:
+                cv2.line(im,pos, posold,(255,0,0),1)
+                if idx is 49:
+                    posfirst=posold
+            if idx is 67:
+                    cv2.line(im,pos, posfirst,(255,0,0),1)
+                
+            if idx>22 and idx<27:
+                cv2.line(im,pos, posold,(255,0,0),1)
+            if idx>17 and idx<22:
+                cv2.line(im,pos, posold,(255,0,0),1)
+            #left_eye
+            if idx>42 and idx<48:
+                if idx is 43:
+                    posfirst=posold
+                cv2.line(im,pos, posold,(255,0,0),1)
+                if idx is 47:
+                    poslast=pos
+            if idx is 48:
+                cv2.line(im,poslast, posfirst,(255,0,0),1)
+            #right_eye
+            if idx>36 and idx<42:
+                if idx is 37:
+                    posfirst=posold
+                cv2.line(im,pos, posold,(255,0,0),1)
+                if idx is 41:
+                    poslast=pos
+            if idx is 42:
+                cv2.line(im,poslast, posfirst,(255,0,0),1)
+             
+            if idx>27 and idx<36:
+                if idx is 31:
+                    posfirst=posold
+                cv2.line(im,pos, posold,(255,0,0),1)
+                if idx is 35:
+                    cv2.line(im,pos, posfirst,(255,0,0),1)
+                    
+                
+            #dist = math.sqrt( (pos[0] - posold[0])**2 + (pos[1] - posold[1])**2 )
+            #print(str(idx)+","+(str(dist)))
+            # cv2.circle(im, pos, 3, color=(counter, 255, 255))
+            posold=pos
+    return im
+
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    image_with_landmarks = annotate_landmarks(frame)
+    cv2.imshow('Live stream', image_with_landmarks)
+    if cv2.waitKey(1) == 10:
+        break
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
